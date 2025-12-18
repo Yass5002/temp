@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Design Document: Slide & Seek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Lato:wght@400;700&family=Roboto+Mono:wght@400&display=swap');
+        
+        .hidden-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            will-change: opacity, transform;
+        }
+        .show-animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .prose-custom ul > li::before {
+            background-color: #38BDF8; /* accent color */
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#0a0f1f',
+                        'primary': '#1A2035',
+                        'accent': '#38BDF8',
+                        'accent-dark': '#0EA5E9',
+                        'text-main': '#E2E8F0',
+                        'text-muted': '#94A3B8',
+                        'border-color': 'rgba(148, 163, 184, 0.2)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        body: ['Lato', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    backdropBlur: {
+                        xl: '20px',
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(56, 189, 248, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-text-main font-body antialiased">
+    <div class="relative min-h-screen overflow-hidden">
+        <!-- Background Gradient Shapes -->
+        <div class="absolute top-0 left-0 -translate-x-1/4 -translate-y-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50"></div>
+        <div class="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 w-[40rem] h-[40rem] bg-indigo-500/10 rounded-full blur-3xl opacity-50"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <header class="text-center mb-16 sm:mb-24 hidden-animate">
+                <h1 class="font-sans font-black text-4xl sm:text-5xl md:text-6xl tracking-tighter">
+                    <span class="block text-text-muted mb-2 text-xl sm:text-2xl font-bold">Game Design Document</span>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-accent to-indigo-400">
+                        Slide & Seek
+                    </span>
+                </h1>
+            </header>
+
+            <main class="space-y-12 sm:space-y-16">
+
+                <!-- Section: Game Overview -->
+                <section class="hidden-animate p-6 sm:p-8 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                    <h2 class="font-sans font-bold text-2xl sm:text-3xl mb-6 text-accent border-b-2 border-border-color pb-4">Game Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-base">
+                        <div><strong class="font-bold text-text-main">Game Mode:</strong> <span class="text-text-muted">Asymmetrical Hide & Seek</span></div>
+                        <div><strong class="font-bold text-text-main">Player Count:</strong> <span class="text-text-muted">4-16 Players</span></div>
+                        <div class="md:col-span-2"><strong class="font-bold text-text-main">Concept:</strong> <p class="text-text-muted mt-1">An online multiplayer game where players must play Hide & Seek at a Waterpark. Hiders must use the park's attractions like slides, pools, and lazy rivers to their advantage to evade the Seeker.</p></div>
+                        <div class="md:col-span-2"><strong class="font-bold text-text-main">Level Design Theme:</strong> <p class="text-text-muted mt-1 leading-relaxed">A vibrant and sprawling tropical waterpark. The map is characterized by massive, interconnected waterslide towers offering high vantage points and fast escape routes. The level includes a variety of zones such as a wave pool with intermittent cover, a lazy river that slowly circulates players, splash pad areas with unpredictable water jets, and hidden grottos behind waterfalls. The design focuses on verticality, dynamic traversal options, and a mix of wide-open spaces and tight, secluded spots to support diverse hiding and seeking strategies.</p></div>
+                        <div class="md:col-span-2"><strong class="font-bold text-text-main">Round Logic:</strong> <p class="text-text-muted mt-1 leading-relaxed">Each round, one player is randomly designated as the "Seeker" while all others are "Hiders." The round begins with a 45-second "Hiding Phase" where Hiders can explore the waterpark and find a spot. After the countdown, the "Seeking Phase" begins, giving the Seeker 5 minutes to find and tag all the Hiders. Hiders can move freely, using waterslides and pools to change location and evade capture. When a Hider is caught, they become a Seeker and must help find the remaining players. The Hiders win if at least one Hider remains hidden when the timer runs out. The Seekers win if all Hiders are found before time expires.</p></div>
+                    </div>
+                </section>
+
+                <!-- Section: Game Logic & Rules -->
+                <section class="hidden-animate p-6 sm:p-8 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                    <h2 class="font-sans font-bold text-2xl sm:text-3xl mb-6 text-accent border-b-2 border-border-color pb-4">Game Logic & Rules</h2>
+                    <div class="prose-custom space-y-6">
+                        <h3 class="font-sans font-bold text-xl text-text-main">Core Gameplay Loop</h3>
+                        <ol class="list-decimal pl-5 space-y-2 text-text-muted">
+                            <li><strong>Round Start & Role Assignment:</strong> At the beginning of each round, one player is randomly designated as the Seeker. All other players are designated as Hiders.</li>
+                            <li><strong>Hiding Phase (45 seconds):</strong> The round begins with the Seeker stationary at a spawn point, with their view obscured. Hiders are free to explore the waterpark and find a hiding spot.</li>
+                            <li><strong>Seeking Phase (4 minutes):</strong> After 45 seconds, the Seeker is released. The Seeker must now hunt for the Hiders.</li>
+                            <li><strong>Round Conclusion:</strong> The round ends when either all Hiders have been caught or the 4-minute timer expires.</li>
+                            <li><strong>Scoring & Next Round:</strong> Points are awarded to all players based on their performance. A new round begins with a new player selected as the Seeker.</li>
+                        </ol>
+                        <h3 class="font-sans font-bold text-xl text-text-main pt-4">Game Rules and Mechanics</h3>
+                        <p class="text-text-muted">All players can run, jump, crouch, and swim. Swimming is slower than running. Players can hide underwater for up to 15 seconds before bubbles appear. Waterslides offer high-speed travel but create a loud, noticeable splash.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                            <div>
+                                <h4 class="font-sans font-bold text-lg text-accent">Hiders (The Splashers)</h4>
+                                <p class="text-text-muted mt-2 mb-4">Objective: Avoid being tagged by the Seeker until the timer runs out.</p>
+                                <ul class="list-disc pl-5 space-y-2 text-text-muted">
+                                    <li><strong>Hiding Spots:</strong> Crouch behind loungers, inside lockers, under waterfalls, in foliage, or submerge in water.</li>
+                                    <li><strong>Lazy River:</strong> Offers a slow, stealthy method of repositioning.</li>
+                                    <li><strong>Wave Pool:</strong> Activated randomly, turbulent water provides excellent cover.</li>
+                                    <li><strong>Ability: Dive Bomb (30s CD):</strong> A short leap creating a splash. In water, it creates visual noise. On land, it creates a puddle that slows the Seeker.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-sans font-bold text-lg text-accent">Seeker (The Lifeguard)</h4>
+                                <p class="text-text-muted mt-2 mb-4">Objective: Find and tag every Hider before the timer expires.</p>
+                                <ul class="list-disc pl-5 space-y-2 text-text-muted">
+                                    <li><strong>Tagging:</strong> Tag Hiders in close proximity. Tagged Hiders become spectators.</li>
+                                    <li><strong>Towers:</strong> Climb towers for a panoramic view to spot movement.</li>
+                                    <li><strong>Audio/Visual Cues:</strong> Pay attention to footsteps, splashes, and opening doors.</li>
+                                    <li><strong>Ability: Whistle Blow (45s CD):</strong> For 5s, sprinting or sliding Hiders in a large radius are briefly outlined.</li>
+                                    <li><strong>Ability: Tidal Surge (60s CD):</strong> Sends a fast wave in a straight line, pushing any Hider it hits.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-sans font-bold text-xl text-text-main pt-4">Win & Loss Conditions</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-text-muted">
+                            <li><strong>Hiders Win:</strong> At least one Hider is still hidden when the 4-minute timer expires.</li>
+                            <li><strong>Seeker Wins:</strong> All Hiders are tagged before the timer expires.</li>
+                            <li><strong>Match Winner:</strong> The player with the highest total score after all rounds wins.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Section: Level Spatial Plan -->
+                <section class="hidden-animate p-6 sm:p-8 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                    <h2 class="font-sans font-bold text-2xl sm:text-3xl mb-6 text-accent border-b-2 border-border-color pb-4">Level Spatial Plan: Splashdown Spire</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">1. Central Hub: The Sunken Lagoon & Sandy Shore</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">The map's nexus and starting zone. A large, open area with high visibility, making it a high-risk transit zone. Key features include a shallow pool, a sandy shore with climbable rocks and umbrellas for cover, and slide exits that create distractions.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">2. West Zone: The Goliath Gauntlet Tower</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">The primary vertical element, offering the best vantage points and complex, multi-level hiding spots. A four-story structure with winding stairs, platforms, and multiple slide entrances offering one-way escape routes.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">3. East Zone: The Vortex Spire & Plunge Pool</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">A secondary, simpler vertical position. Easier for a Seeker to patrol but has fewer hiding spots. Features a giant bowl slide that deposits players into a separate plunge pool connected to the Lazy River.</p>
+                        </div>
+                         <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">4. North Zone: The Riptide Racers & Palm Grove</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">A low-profile area with dense ground cover, ideal for early-game hiding. A maze of slide tubes, palm trees, and thick bushes creates short sightlines and tight hiding spots.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">5. Interior Zone: The Pump Room</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">A claustrophobic indoor environment where sound cues are critical. Dimly lit with loud machinery, oversized pipes, and plenty of hiding spots. A hidden vent provides a one-way exit.</p>
+                        </div>
+                        <div>
+                            <h3 class="font-sans font-bold text-xl text-text-main">6. Connecting Element: The Castaway Lazy River</h3>
+                            <p class="text-text-muted mt-2 leading-relaxed">A dynamic, circular path connecting the map's perimeter. Serves as a transportation system, escape route, and mobile hiding opportunity, passing through a dark "Grotto" tunnel that breaks line of sight.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section: Interaction Flow -->
+                <section class="hidden-animate p-6 sm:p-8 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                    <h2 class="font-sans font-bold text-2xl sm:text-3xl mb-6 text-accent border-b-2 border-border-color pb-4">Interaction Flow (Device Graph)</h2>
+                    <div class="space-y-6 font-mono text-sm">
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Player Character → Waterslide Entrance:</strong> <span class="text-text-muted">Player interacts with a slide, triggering high-speed spline movement to the exit. This is a loud, fast, one-way route.</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Seeker (Proximity + Action) → Hider:</strong> <span class="text-text-muted">Seeker uses "Tag" on a nearby Hider. Hider's role is changed to "Spectator".</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Round Logic System → Player Role System:</strong> <span class="text-text-muted">Queries player roles after a tag. If Hider count is zero, declares "Seekers Win".</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Timer System → Round Logic System:</strong> <span class="text-text-muted">Hiding Phase timer expiration triggers Seeking Phase. Seeking Phase timer expiration triggers "Hiders Win".</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Hider → Water Body:</strong> <span class="text-text-muted">Entering water changes movement to "Swimming" (slower, quieter). Can "Submerge" to become nearly invisible at the cost of oxygen.</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                            <p class="text-accent-dark"><strong class="text-text-main">Seeker → Vantage Point:</strong> <span class="text-text-muted">Climbing to a high point enhances visual cues from Hiders (ripples, swaying foliage).</span></p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                           <p class="text-accent-dark"><strong class="text-text-main">Hider → Interactive Environment Object:</strong> <span class="text-text-muted">Interacting with objects like rafts attaches the player, providing camouflage at the cost of movement control.</span></p>
+                        </div>
+                         <div class="p-4 rounded-lg bg-black/20 border border-border-color">
+                           <p class="text-accent-dark"><strong class="text-text-main">End-of-Round Sequence → Scoring System:</strong> <span class="text-text-muted">On win condition, awards points based on survival time (Hiders) and tags (Seekers).</span></p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section: Visual Maps -->
+                <section class="hidden-animate">
+                    <h2 class="font-sans font-bold text-2xl sm:text-3xl mb-8 text-accent text-center">Visual Maps</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <figure class="flex flex-col p-4 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                            <img src="Generate_image_prompt_202512180237.jpeg" alt="">
+                            <figcaption class="mt-4 text-center text-sm text-text-muted italic">2D Game Map Chart</figcaption>
+                        </figure>
+                        <figure class="flex flex-col p-4 rounded-2xl bg-primary/50 backdrop-blur-xl border border-border-color shadow-2xl shadow-black/20">
+                                <img src="A_hyperdynamic_highfidelity_202512180237.jpeg" alt="" srcset="">
+                            <figcaption class="mt-4 text-center text-sm text-text-muted italic">Refined Game Map Render</figcaption>
+                        </figure>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show-animate');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            const hiddenElements = document.querySelectorAll('.hidden-animate');
+            hiddenElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
